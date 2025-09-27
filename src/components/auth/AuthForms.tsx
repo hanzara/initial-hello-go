@@ -391,7 +391,7 @@ const AuthForms: React.FC = () => {
                   />
                   <Label htmlFor="terms" className="text-sm leading-5">
                     I agree to the{' '}
-                    <a href="#" className="text-primary hover:underline">Terms of Service</a>
+                    <a href="/terms" target="_blank" className="text-primary hover:underline">Terms of Service</a>
                   </Label>
                 </div>
                 
@@ -403,7 +403,7 @@ const AuthForms: React.FC = () => {
                   />
                   <Label htmlFor="privacy" className="text-sm leading-5">
                     I agree to the{' '}
-                    <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+                    <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>
                   </Label>
                 </div>
               </div>

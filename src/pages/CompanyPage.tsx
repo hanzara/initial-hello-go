@@ -691,10 +691,10 @@ const CompanyPage = () => {
                   © 2024 ChamaWallet. All rights reserved.
                 </p>
                 <div className="flex space-x-6">
-                  <a href="#" className="text-sm text-kenyan-navy-foreground/60 hover:text-kenyan-green transition-colors">
+                  <a href="/privacy" className="text-sm text-kenyan-navy-foreground/60 hover:text-kenyan-green transition-colors">
                     Privacy Policy
                   </a>
-                  <a href="#" className="text-sm text-kenyan-navy-foreground/60 hover:text-kenyan-green transition-colors">
+                  <a href="/terms" className="text-sm text-kenyan-navy-foreground/60 hover:text-kenyan-green transition-colors">
                     Terms of Service
                   </a>
                   <a href="#" className="text-sm text-kenyan-navy-foreground/60 hover:text-kenyan-green transition-colors">

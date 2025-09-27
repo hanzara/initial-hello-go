@@ -47,6 +47,8 @@ import BudgetTrackerPage from "./pages/BudgetTrackerPage";
 import NotFound from "./pages/NotFound";
 import DashboardPage from "./pages/DashboardPage";
 import DealsAndBillsPage from "./pages/DealsAndBillsPage";
+import TermsOfServicePage from "./pages/TermsOfServicePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 const queryClient = new QueryClient();
 
@@ -156,6 +158,8 @@ function App() {
                 <Route path="/company" element={<Navigate to="/" replace />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/download" element={<AppDownloadPage />} />
+                <Route path="/terms" element={<TermsOfServicePage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
                 <Route path="*" element={
                   <ProtectedRoute>
                     <AppLayout>

@@ -44,7 +44,7 @@ interface UserProfile {
   email: string;
   phone?: string;
   kyc_status: string;
-  verification_tier: string;
+  verification_tier: number; // Changed to number
   created_at: string;
   [key: string]: any;
 }
@@ -93,7 +93,7 @@ const AdminTools: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUserProfiles(data || []);
+      setUserProfiles((data || []) as UserProfile[]);
     } catch (error: any) {
       console.error('Error fetching user profiles:', error);
       toast({
@@ -174,7 +174,7 @@ const AdminTools: React.FC = () => {
         .update({
           kyc_status: status,
           is_verified: status === 'verified',
-          verification_tier: tier,
+          verification_tier: parseInt(tier) || 1,
           kyc_verified_at: status === 'verified' ? new Date().toISOString() : null
         })
         .eq('user_id', userId);

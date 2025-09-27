@@ -340,7 +340,7 @@ const KYCVerification: React.FC = () => {
                       <div>
                         <p className="font-medium">{docType?.label || doc.document_type}</p>
                         <p className="text-sm text-muted-foreground">
-                          Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
+                          Uploaded {new Date(doc.created_at).toLocaleDateString()}
                         </p>
                         {doc.document_number && (
                           <p className="text-sm text-muted-foreground">

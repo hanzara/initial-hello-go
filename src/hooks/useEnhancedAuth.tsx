@@ -24,7 +24,7 @@ interface EnhancedProfile {
   kyc_verified_by?: string;
   kyc_rejection_reason?: string;
   is_verified?: boolean;
-  verification_tier?: string;
+  verification_tier?: number; // Changed from string to number
   max_transaction_limit?: number;
   max_daily_limit?: number;
   profile_visibility?: string;
@@ -44,46 +44,43 @@ interface EnhancedProfile {
 interface KYCDocument {
   id: string;
   user_id: string;
-  document_type: 'national_id' | 'passport' | 'driving_license' | 'utility_bill' | 'bank_statement' | 'business_permit' | 'tax_certificate';
+  document_type: string; // Simplified to match database
   document_number?: string;
-  storage_path: string;
+  file_path: string; // Changed from storage_path
   file_name: string;
   file_size?: number;
   mime_type?: string;
-  status: 'pending' | 'in_review' | 'verified' | 'rejected';
+  status: string; // Simplified to match database
   reviewed_by?: string;
   reviewed_at?: string;
   rejection_reason?: string;
-  encrypted: boolean;
-  access_log: any[];
-  uploaded_at: string;
   expires_at?: string;
   created_at: string;
   updated_at: string;
 }
 
 interface SecuritySettings {
-  id: string;
+  id?: string;
   user_id: string;
   pin_hash?: string;
   pin_salt?: string;
   pin_created_at?: string;
   pin_last_changed?: string;
-  failed_pin_attempts: number;
+  failed_pin_attempts?: number;
   pin_locked_until?: string;
   last_failed_pin_attempt?: string;
-  biometric_enabled: boolean;
+  biometric_enabled?: boolean;
   biometric_type?: string;
   biometric_last_used?: string;
-  max_session_duration: string;
-  auto_logout_enabled: boolean;
-  require_pin_for_transactions: boolean;
-  security_questions: any[];
-  trusted_devices: any[];
-  last_security_review: string;
-  security_score: number;
-  created_at: string;
-  updated_at: string;
+  max_session_duration?: string;
+  auto_logout_enabled?: boolean;
+  require_pin_for_transactions?: boolean;
+  security_questions?: any[];
+  trusted_devices?: any[];
+  last_security_review?: string;
+  security_score?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const useEnhancedAuth = () => {
@@ -154,7 +151,7 @@ export const useEnhancedAuth = () => {
 
     try {
       const { data, error } = await supabase
-        .from('user_security_enhanced')
+        .from('user_pins_enhanced')
         .select('*')
         .eq('user_id', user.id)
         .single();
@@ -227,11 +224,10 @@ export const useEnhancedAuth = () => {
           user_id: user.id,
           document_type: documentType,
           document_number: documentNumber,
-          storage_path: fileName,
+          file_path: fileName,
           file_name: file.name,
           file_size: file.size,
-          mime_type: file.type,
-          encrypted: false
+          mime_type: file.type
         });
 
       if (dbError) {
@@ -262,7 +258,7 @@ export const useEnhancedAuth = () => {
     if (!user) return false;
 
     try {
-      const { data, error } = await supabase.rpc('set_user_pin_secure', {
+      const { data, error } = await supabase.rpc('set_user_pin_enhanced', {
         p_user_id: user.id,
         p_pin: pin
       });
@@ -301,16 +297,16 @@ export const useEnhancedAuth = () => {
     if (!user) return false;
 
     try {
-      const { data, error } = await supabase.rpc('verify_user_pin_secure', {
+      const { data, error } = await supabase.rpc('verify_user_pin_v2', {
         p_user_id: user.id,
         p_pin: pin
       });
 
       if (error) throw error;
 
-      const result = data as { success: boolean; message: string; attempts_remaining?: number };
+      const result = data as boolean;
       
-      if (result.success) {
+      if (result) {
         toast({
           title: "Success",
           description: "PIN verified successfully",
@@ -318,10 +314,8 @@ export const useEnhancedAuth = () => {
         return true;
       } else {
         toast({
-          title: "Error",
-          description: result.attempts_remaining 
-            ? `${result.message}. ${result.attempts_remaining} attempts remaining.`
-            : result.message,
+          title: "Error", 
+          description: "Invalid PIN",
           variant: "destructive",
         });
         return false;
@@ -341,20 +335,7 @@ export const useEnhancedAuth = () => {
     if (!user) return false;
 
     try {
-      const { error } = await supabase
-        .from('legal_acceptances')
-        .insert({
-          user_id: user.id,
-          document_type: documentType,
-          document_version: documentVersion,
-          accepted: true,
-          ip_address: null, // Would need to get from client
-          user_agent: navigator.userAgent
-        });
-
-      if (error) throw error;
-
-      // Update profile to reflect legal acceptance
+      // For now, just update the profile directly
       const updates: any = {};
       if (documentType === 'terms_of_service') {
         updates.terms_accepted = true;
@@ -364,8 +345,13 @@ export const useEnhancedAuth = () => {
         updates.privacy_policy_accepted_at = new Date().toISOString();
       }
 
-      if (Object.keys(updates).length > 0) {
-        await updateProfile(updates);
+      const { error } = await supabase
+        .from('user_profiles_enhanced')
+        .update(updates)
+        .eq('user_id', user.id);
+
+      if (error) {
+        throw error;
       }
 
       toast({

@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button';
 import CurrencyDisplay from '@/components/CurrencyDisplay';
 import { Wallet, Lock, Unlock, ArrowUp, ArrowDown, Send } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { TopUpModal } from './TopUpModal';
-import { WithdrawModal } from './WithdrawModal';
-import { SendToMemberModal } from './SendToMemberModal';
+import { WalletOperationModal } from './WalletOperationModal';
+import { useChamaMembers } from '@/hooks/useChamaMembers';
 
 interface WalletCardsProps {
   chamaId: string;
@@ -26,6 +25,15 @@ export const WalletCards: React.FC<WalletCardsProps> = ({
   const [topUpOpen, setTopUpOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [sendOpen, setSendOpen] = useState(false);
+  const [operationType, setOperationType] = useState<'topup' | 'withdraw' | 'send'>('topup');
+  const { data: members } = useChamaMembers(chamaId);
+
+  const handleOpenModal = (type: 'topup' | 'withdraw' | 'send') => {
+    setOperationType(type);
+    if (type === 'topup') setTopUpOpen(true);
+    if (type === 'withdraw') setWithdrawOpen(true);
+    if (type === 'send') setSendOpen(true);
+  };
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {/* Chama Savings Wallet */}
@@ -81,28 +89,28 @@ export const WalletCards: React.FC<WalletCardsProps> = ({
           
           <div className="flex flex-col gap-2">
             <Button 
-              onClick={() => setTopUpOpen(true)} 
+              onClick={() => handleOpenModal('topup')} 
               variant="outline" 
               className="w-full justify-start"
               size="sm"
             >
               <ArrowUp className="h-4 w-4 mr-2" />
-              Top Up from Savings
+              Top Up from Central Wallet
             </Button>
             
             <Button 
-              onClick={() => setWithdrawOpen(true)} 
+              onClick={() => handleOpenModal('withdraw')} 
               disabled={withdrawalLocked || mgrBalance === 0}
               variant="outline" 
               className="w-full justify-start"
               size="sm"
             >
               <ArrowDown className="h-4 w-4 mr-2" />
-              Withdraw to M-Pesa
+              Withdraw to M-Pesa / Bank
             </Button>
             
             <Button 
-              onClick={() => setSendOpen(true)} 
+              onClick={() => handleOpenModal('send')} 
               disabled={mgrBalance === 0}
               variant="outline" 
               className="w-full justify-start"
@@ -113,25 +121,29 @@ export const WalletCards: React.FC<WalletCardsProps> = ({
             </Button>
           </div>
 
-          <TopUpModal 
+          <WalletOperationModal 
             open={topUpOpen}
             onOpenChange={setTopUpOpen}
             chamaId={chamaId}
-            savingsBalance={savingsBalance}
+            operation="topup"
+            currentMGRBalance={mgrBalance}
           />
 
-          <WithdrawModal
+          <WalletOperationModal
             open={withdrawOpen}
             onOpenChange={setWithdrawOpen}
             chamaId={chamaId}
-            mgrBalance={mgrBalance}
+            operation="withdraw"
+            currentMGRBalance={mgrBalance}
           />
 
-          <SendToMemberModal
+          <WalletOperationModal
             open={sendOpen}
             onOpenChange={setSendOpen}
             chamaId={chamaId}
-            mgrBalance={mgrBalance}
+            operation="send"
+            currentMGRBalance={mgrBalance}
+            members={members}
           />
 
           {withdrawalLocked && (

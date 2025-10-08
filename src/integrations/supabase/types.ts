@@ -447,6 +447,75 @@ export type Database = {
           },
         ]
       }
+      chama_audit_trail: {
+        Row: {
+          action: string
+          actor_id: string | null
+          amount: number | null
+          chama_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_member_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          amount?: number | null
+          chama_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_member_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          amount?: number | null
+          chama_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_member_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chama_audit_trail_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "chama_leaderboard"
+            referencedColumns: ["member_id"]
+          },
+          {
+            foreignKeyName: "chama_audit_trail_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "chama_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chama_audit_trail_chama_id_fkey"
+            columns: ["chama_id"]
+            isOneToOne: false
+            referencedRelation: "chamas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chama_audit_trail_target_member_id_fkey"
+            columns: ["target_member_id"]
+            isOneToOne: false
+            referencedRelation: "chama_leaderboard"
+            referencedColumns: ["member_id"]
+          },
+          {
+            foreignKeyName: "chama_audit_trail_target_member_id_fkey"
+            columns: ["target_member_id"]
+            isOneToOne: false
+            referencedRelation: "chama_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chama_categories: {
         Row: {
           color: string | null
@@ -5800,6 +5869,30 @@ export type Database = {
           total_income?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_central_wallets: {
+        Row: {
+          balance: number | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

@@ -15,7 +15,7 @@ import { useChamaNotifications } from '@/hooks/useChamaNotifications';
 import { WalletCards } from '@/components/chama/WalletCards';
 import { ContributionLeaderboard } from '@/components/chama/ContributionLeaderboard';
 import { RoleBasedDashboard } from '@/components/chama/RoleBasedDashboard';
-import { LoanManagementPanel } from '@/components/chama/LoanManagementPanel';
+import { ChamaLoansTab } from '@/components/chama/ChamaLoansTab';
 import { RealtimeContributionFeed } from '@/components/chama/RealtimeContributionFeed';
 import { MemberUnlockModal } from '@/components/chama/MemberUnlockModal';
 import { MemberManagementTable } from '@/components/chama/MemberManagementTable';
@@ -296,104 +296,11 @@ const ChamaDetailPage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="loans" className="space-y-4">
-            {/* Apply for Loan Banner */}
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-primary/5 via-primary/3 to-secondary/5 hover:shadow-xl transition-all">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="p-2 bg-primary/10 rounded-lg">
-                        <CreditCard className="h-5 w-5 text-primary" />
-                      </div>
-                      <h3 className="text-lg font-semibold">Need Financial Support?</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Apply for a loan with competitive rates and flexible repayment terms
-                    </p>
-                  </div>
-                  <Button 
-                    onClick={() => navigate('/apply-loan')}
-                    size="lg"
-                    className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all shadow-lg hover:shadow-xl"
-                  >
-                    <CreditCard className="h-5 w-5" />
-                    Apply for Loan
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                      Loan Management
-                    </CardTitle>
-                    <CardDescription>
-                      View and manage chama loans
-                    </CardDescription>
-                  </div>
-                  {(isAdmin || isTreasurer) && loans && loans.length > 0 && (
-                    <Button
-                      onClick={() => exportLoans(id!, chama.name)}
-                      variant="outline"
-                      size="sm"
-                    >
-                      Export Loans
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {!loans || loans.length === 0 ? (
-                  <div className="text-center py-12 space-y-4">
-                    <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                      <CreditCard className="h-8 w-8 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">No active loans yet</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Be the first to apply for a loan from this chama
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={() => navigate('/apply-loan')}
-                      variant="outline"
-                      className="gap-2"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                      Apply Now
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {loans.map((loan: any) => (
-                      <div 
-                        key={loan.id} 
-                        className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1">
-                            <p className="font-medium">{loan.borrower_name}</p>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <DollarSign className="h-3 w-3" />
-                              <span>KES {loan.amount?.toLocaleString()}</span>
-                              <span>•</span>
-                              <span className="capitalize">{loan.status}</span>
-                            </div>
-                          </div>
-                          <Badge variant={loan.status === 'active' ? 'default' : 'secondary'}>
-                            {loan.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ChamaLoansTab
+              chamaId={id!}
+              userRole={userRole?.role}
+              isAdmin={isAdmin}
+            />
           </TabsContent>
 
           <TabsContent value="reports" className="space-y-4">

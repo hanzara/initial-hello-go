@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { FileText, Phone } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LoanReportModalProps {
   isOpen: boolean;
@@ -21,40 +22,56 @@ export const LoanReportModal: React.FC<LoanReportModalProps> = ({
   chamaId
 }) => {
   const [paymentNumber, setPaymentNumber] = useState(loan.member_payment_number || '');
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
+  // Check if current user is the borrower
+  const isBorrower = loan.chama_members?.user_id === user?.id;
+
+  const handleSubmitPaymentDetails = async () => {
+    if (!paymentNumber.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your payment number",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
-        .from('chama_loan_requests')
-        .update({
+      const { error } = await (supabase as any)
+        .from('chama_loans')
+        .update({ 
           member_payment_number: paymentNumber,
-          report: `Payment details provided: ${paymentNumber}`
+          metadata: {
+            ...loan.metadata,
+            payment_number: paymentNumber,
+            payment_details_provided_at: new Date().toISOString()
+          }
         })
         .eq('id', loan.id);
 
       if (error) throw error;
 
       toast({
-        title: "Payment Details Saved! ✅",
-        description: "Member payment details updated successfully"
+        title: "Payment Details Submitted! ✅",
+        description: "The admin can now send your loan funds"
       });
 
       onClose();
       window.location.reload();
     } catch (error: any) {
-      console.error('Save error:', error);
+      console.error('Submit payment details error:', error);
       toast({
-        title: "Failed to Save",
-        description: error.message || "An error occurred",
+        title: "Submission Failed",
+        description: error.message || "Failed to submit payment details",
         variant: "destructive"
       });
     } finally {
-      setIsSaving(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -65,53 +82,112 @@ export const LoanReportModal: React.FC<LoanReportModalProps> = ({
           <DialogTitle>Loan Report & Payment Details</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSave} className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Loan Amount:</span>
-              <span className="font-medium">KES {loan.amount.toLocaleString()}</span>
+        <div className="space-y-4">
+          {/* Loan Details */}
+          <div className="space-y-3">
+            <div>
+              <Label>Loan Amount</Label>
+              <Input
+                value={`KES ${loan.amount.toLocaleString()}`}
+                disabled
+                className="bg-muted"
+              />
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Amount Paid:</span>
-              <span className="font-medium">KES {(loan.amount_paid || 0).toLocaleString()}</span>
+
+            <div>
+              <Label>Purpose</Label>
+              <Input
+                value={loan.purpose}
+                disabled
+                className="bg-muted"
+              />
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Status:</span>
-              <span className="font-medium">{loan.status}</span>
+
+            <div>
+              <Label>Status</Label>
+              <Input
+                value={loan.status}
+                disabled
+                className="bg-muted capitalize"
+              />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="paymentNumber">Member Payment Number</Label>
-            <Input
-              id="paymentNumber"
-              value={paymentNumber}
-              onChange={(e) => setPaymentNumber(e.target.value)}
-              placeholder="e.g., +254712345678 or Mpesa number"
-            />
-            <p className="text-xs text-muted-foreground">
-              This is where funds will be sent when you click "Send"
-            </p>
-          </div>
-
-          {loan.report && (
-            <div className="space-y-2">
-              <Label>Report Notes</Label>
-              <div className="p-3 bg-muted rounded-lg text-sm">
-                {loan.report}
+          {/* Payment Details Section */}
+          {loan.disbursement_status && (
+            <div className="border-t pt-4 space-y-3">
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Your loan has been disbursed! {isBorrower && !loan.member_payment_number && 'Please provide your payment details below.'}
+                </p>
               </div>
+
+              {isBorrower && !loan.member_payment_number ? (
+                <>
+                  <div>
+                    <Label htmlFor="paymentNumber">
+                      Payment Number (Phone/Wallet ID) *
+                    </Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="paymentNumber"
+                        placeholder="e.g., 0712345678"
+                        value={paymentNumber}
+                        onChange={(e) => setPaymentNumber(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enter your M-Pesa number or wallet ID to receive funds
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleSubmitPaymentDetails}
+                    disabled={isSubmitting}
+                    className="w-full"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Payment Details'}
+                  </Button>
+                </>
+              ) : loan.member_payment_number ? (
+                <div>
+                  <Label>Member Payment Number</Label>
+                  <Input
+                    value={loan.member_payment_number}
+                    disabled
+                    className="bg-muted"
+                  />
+                  {loan.funds_sent_at && (
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                      ✅ Funds sent on {new Date(loan.funds_sent_at).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                  <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                    Waiting for member to provide payment details
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Close
-            </Button>
-            <Button type="submit" disabled={isSaving} className="flex-1">
-              {isSaving ? 'Saving...' : 'Save Details'}
-            </Button>
-          </div>
-        </form>
+          {!loan.disbursement_status && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <p className="text-sm text-blue-600 dark:text-blue-400">
+                Waiting for loan disbursement approval
+              </p>
+            </div>
+          )}
+
+          <Button variant="outline" onClick={onClose} className="w-full">
+            Close
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

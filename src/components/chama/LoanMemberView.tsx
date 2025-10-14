@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { useChamaLoans } from '@/hooks/useChamaLoans';
 import LoanRequestModal from './LoanRequestModal';
 import { RepayLoanModal } from './RepayLoanModal';
+import { LoanReportModal } from './LoanReportModal';
 
 interface LoanMemberViewProps {
   chamaId: string;
@@ -16,6 +17,7 @@ interface LoanMemberViewProps {
 export const LoanMemberView: React.FC<LoanMemberViewProps> = ({ chamaId, chamaData }) => {
   const [showLoanModal, setShowLoanModal] = useState(false);
   const [showRepayModal, setShowRepayModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<any>(null);
   
   const { loans, isLoading } = useChamaLoans(chamaId);
@@ -190,7 +192,25 @@ export const LoanMemberView: React.FC<LoanMemberViewProps> = ({ chamaId, chamaDa
                       </div>
                     )}
 
-                    {loan.status === 'approved' && (
+                    {loan.status === 'approved' && loan.disbursement_status && !loan.member_payment_number && (
+                      <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                        <p className="text-sm text-green-600 dark:text-green-400 mb-2">
+                          ✅ Your loan has been disbursed! Please provide payment details.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedLoan(loan);
+                            setShowReportModal(true);
+                          }}
+                        >
+                          Provide Payment Details
+                        </Button>
+                      </div>
+                    )}
+
+                    {loan.status === 'approved' && !loan.disbursement_status && (
                       <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                         <p className="text-sm text-blue-600 dark:text-blue-400">
                           ✅ Your loan has been approved! Waiting for disbursement.
@@ -240,15 +260,27 @@ export const LoanMemberView: React.FC<LoanMemberViewProps> = ({ chamaId, chamaDa
       />
 
       {selectedLoan && (
-        <RepayLoanModal
-          isOpen={showRepayModal}
-          onClose={() => {
-            setShowRepayModal(false);
-            setSelectedLoan(null);
-          }}
-          loan={selectedLoan}
-          chamaId={chamaId}
-        />
+        <>
+          <RepayLoanModal
+            isOpen={showRepayModal}
+            onClose={() => {
+              setShowRepayModal(false);
+              setSelectedLoan(null);
+            }}
+            loan={selectedLoan}
+            chamaId={chamaId}
+          />
+          
+          <LoanReportModal
+            isOpen={showReportModal}
+            onClose={() => {
+              setShowReportModal(false);
+              setSelectedLoan(null);
+            }}
+            loan={selectedLoan}
+            chamaId={chamaId}
+          />
+        </>
       )}
     </div>
   );

@@ -1,0 +1,31 @@
+project_id = "vclaomfxzbcbfcsweqjh"
+
+[functions.explain-code]
+verify_jwt = false
+
+[functions.debug-code]
+verify_jwt = false
+
+[functions.optimize-code]
+verify_jwt = false
+
+[functions.security-scan]
+verify_jwt = false
+
+[functions.complexity-analysis]
+verify_jwt = false
+
+[functions.genome-mapper]
+verify_jwt = false
+
+[functions.analyze-repository]
+verify_jwt = false
+
+[functions.generate-mutations]
+verify_jwt = false
+
+[functions.test-mutation]
+verify_jwt = false
+
+[functions.generate-lesson]
+verify_jwt = false

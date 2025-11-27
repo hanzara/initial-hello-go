@@ -3,6 +3,7 @@ import { Home, Send, TrendingUp, Settings, User, Bell, Plus, QrCode, History, Cr
 import BulkPayoutUI from '@/components/BulkPayoutUI';
 import PaymentLinkUI from '@/components/PaymentLinkUI';
 import GlobalQRPayment from '@/components/GlobalQRPayment';
+import AddFunds from '@/components/AddFunds';
 
 const ChainFlowMobile = () => {
   const [currentTab, setCurrentTab] = useState('home');
@@ -290,7 +291,10 @@ const ChainFlowMobile = () => {
         <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b border-border">
             <h3 className="font-bold text-foreground">Your Wallets</h3>
-            <button className="text-indigo-600 text-sm font-medium active:scale-95">
+            <button 
+              onClick={() => setCurrentScreen('add-funds')}
+              className="text-indigo-600 text-sm font-medium active:scale-95 hover:text-indigo-700 transition-colors"
+            >
               Add Funds →
             </button>
           </div>
@@ -1061,6 +1065,9 @@ const ChainFlowMobile = () => {
             {renderDetailScreen('Settings', 'Configure app preferences, language, theme, and other options.')}
           </>
         );
+      
+      case 'add-funds':
+        return <AddFunds onBack={goBack} />;
       
       default:
         return (

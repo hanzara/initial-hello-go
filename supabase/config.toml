@@ -1,1 +1,7 @@
 project_id = "fwgvjcomfzdpbjcqeslo"
+
+[functions.mpesa-stk-push]
+verify_jwt = false
+
+[functions.stripe-checkout]
+verify_jwt = false
